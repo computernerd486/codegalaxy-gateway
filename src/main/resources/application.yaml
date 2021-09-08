@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: gateway
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+          predicates:
+            - name: Path
+              args:
+                - pattern: "'/api/'+serviceId+'/**'"
+          filters:
+#            - name: CircuitBreaker
+#              args:
+#                - name: serviceId
+            - name: StripPrefix
+              args:
+                parts: 1
+            - name: RewritePath
+              args:
+                regexp: "'/' + serviceId + '/(?<remaining>.*)'"
+                replacement: "'/${remaining}'"
+
+management:
+  endpoint:
+    gateway:
+      enabled: true # default value
+
+    health:
+      show-components: always
+
+  endpoints:
+    web:
+      exposure:
+        include: gateway, heath, info
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: false
